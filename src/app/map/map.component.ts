@@ -1,5 +1,10 @@
 import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { ScriptLoadService } from '../script-load.service';
+import { Marker } from '../marker';
+import { FirebaseApp } from 'angularfire2';
+import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 const your_API_key = 'AIzaSyAwVnwE1bEZf_Bkk_pSkGM0XlBSXJocVUY';
 const url = 'https://maps.googleapis.com/maps/api/js?key=' + your_API_key;
@@ -11,9 +16,29 @@ const url = 'https://maps.googleapis.com/maps/api/js?key=' + your_API_key;
 })
 export class MapComponent implements AfterViewInit {
 
+  markersRef: AngularFireList<any>;
+  markers: Observable<Marker[]>;
+  markersCh: Observable<Marker[]>;
+  newMarker: Marker;
+
   @ViewChild('mapElement') mapElm: ElementRef;
 
-  constructor(private load: ScriptLoadService) {
+  constructor(private load: ScriptLoadService, db: AngularFireDatabase) {
+
+    this.markers = db.list('/markers').valueChanges();
+
+    this.markers.subscribe(x => {
+      console.log(x);
+    });
+
+    this.markersRef = db.list('/markers');
+
+    this.markersCh = this.markersRef.snapshotChanges().pipe(
+      map(changes =>
+        changes.map(c => ({ key: c.payload.key, ...c.payload.val() }))
+      )
+    );
+
   }
 
   ngAfterViewInit(): void {
@@ -39,8 +64,16 @@ export class MapComponent implements AfterViewInit {
       });
 
       this.map.addListener('click', (e) => {
-        console.log(e);
+        console.log(e.latLng, e.latLng.lat(), e.latLng.lng());
         this.placeMarkerAndPanTo(e.latLng, this.map);
+        this.newMarker = {
+          position: {
+            lat: e.latLng.lat(),
+            lng: e.latLng.lng()
+          },
+          title: 'marker'
+        }
+        this.addMarker(this.newMarker);
       });
     }
   }
@@ -52,5 +85,23 @@ export class MapComponent implements AfterViewInit {
     });
     map.panTo(latLng);
   }
+
+  // addItem(newName: string) {
+  //   this.markersRef.push({ text: newName });
+  // }
+
+  addMarker(marker: Marker) {
+    this.markersRef.push(marker);
+  }
+
+  // updateItem(key: string, newText: string) {
+  //   this.markersRef.update(key, { text: newText });
+  // }
+  // deleteItem(key: string) {
+  //   this.markersRef.remove(key);
+  // }
+  // deleteEverything() {
+  //   this.markersRef.remove();
+  // }
 
 }
