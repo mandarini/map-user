@@ -10,7 +10,7 @@ import { map } from 'rxjs/operators';
   styleUrls: ['./list.component.css']
 })
 export class ListComponent {
-  
+
   itemsRef: AngularFireList<any>;
   items: Observable<any[]>;
   otheritems: Observable<any[]>;
@@ -23,12 +23,6 @@ export class ListComponent {
         changes.map(c => ({ key: c.payload.key, ...c.payload.val() }))
       )
     );
-
-    // this.artists = db.list('/messages').valueChanges();
-
-    // this.artists.subscribe(x => {
-    //   console.log(x);
-    // });
 
   }
   addItem(newName: string) {

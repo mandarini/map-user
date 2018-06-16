@@ -1,1 +1,8 @@
+<p>
+  Username: {{ newName }}
+</p>
+
+<input type="text" #name />
+<button (click)="userName(name.value)">Set Username</button>
+
 <div class="map" #mapElement></div>

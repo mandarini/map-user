@@ -20,6 +20,7 @@ export class MapComponent implements AfterViewInit {
   markers: Observable<Marker[]>;
   markersCh: Observable<Marker[]>;
   newMarker: Marker;
+  newName: string;
 
   @ViewChild('mapElement') mapElm: ElementRef;
 
@@ -39,6 +40,7 @@ export class MapComponent implements AfterViewInit {
       )
     );
 
+    this.newName = 'Anonymous';
   }
 
   ngAfterViewInit(): void {
@@ -71,7 +73,7 @@ export class MapComponent implements AfterViewInit {
             lat: e.latLng.lat(),
             lng: e.latLng.lng()
           },
-          title: 'marker'
+          title: this.newName
         }
         this.addMarker(this.newMarker);
       });
@@ -92,6 +94,10 @@ export class MapComponent implements AfterViewInit {
 
   addMarker(marker: Marker) {
     this.markersRef.push(marker);
+  }
+
+  userName(name: string) {
+    this.newName= name;
   }
 
   // updateItem(key: string, newText: string) {
