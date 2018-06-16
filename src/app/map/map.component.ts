@@ -1,6 +1,5 @@
 import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { ScriptLoadService } from '../script-load.service';
-import { Marker } from '../marker';
 import { FirebaseApp } from 'angularfire2';
 import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
 import { Observable } from 'rxjs';
@@ -16,10 +15,11 @@ const url = 'https://maps.googleapis.com/maps/api/js?key=' + your_API_key;
 })
 export class MapComponent implements AfterViewInit {
 
+  maps: any;
+  map: any;
   markersRef: AngularFireList<any>;
-  markers: Observable<Marker[]>;
-  markersCh: Observable<Marker[]>;
-  newMarker: Marker;
+  markers: Observable<any[]>;
+  markersCh: Observable<any[]>;
   newName: string;
 
   @ViewChild('mapElement') mapElm: ElementRef;
@@ -68,16 +68,9 @@ export class MapComponent implements AfterViewInit {
       this.map.addListener('click', (e) => {
         console.log(e.latLng, e.latLng.lat(), e.latLng.lng());
         this.placeMarkerAndPanTo(e.latLng, this.map);
-        this.newMarker = {
-          position: {
-            lat: e.latLng.lat(),
-            lng: e.latLng.lng()
-          },
-          title: this.newName
-        }
-        this.addMarker(this.newMarker);
+        this.addMarker(e.latLng.lat(), e.latLng.lng(),this.newName);
       });
-    }
+    });
   }
 
   placeMarkerAndPanTo(latLng, map) {
@@ -88,12 +81,14 @@ export class MapComponent implements AfterViewInit {
     map.panTo(latLng);
   }
 
-  // addItem(newName: string) {
-  //   this.markersRef.push({ text: newName });
-  // }
-
-  addMarker(marker: Marker) {
-    this.markersRef.push(marker);
+  addMarker(lat: number, lng: number, title: string) {
+    this.markersRef.push({
+      position: {
+        lat: lat,
+        lng: lng,
+      },
+      title: title
+    });
   }
 
   userName(name: string) {
