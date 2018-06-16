@@ -3,10 +3,12 @@ import { NgModule } from '@angular/core';
 import { ScriptLoadService } from './script-load.service';
 
 import { AppComponent } from './app.component';
+import { MapComponent } from './map/map.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    MapComponent
   ],
   imports: [
     BrowserModule
