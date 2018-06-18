@@ -101,15 +101,4 @@ export class MapComponent implements AfterViewInit {
   addMarker(marker: any) {
     this.markersRef.push(marker);
   }
-
-  // updateItem(key: string, newText: string) {
-  //   this.markersRef.update(key, { text: newText });
-  // }
-  // deleteItem(key: string) {
-  //   this.markersRef.remove(key);
-  // }
-  deleteEverything() {
-    this.markersRef.remove();
-  }
-
 }
