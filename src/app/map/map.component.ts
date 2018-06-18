@@ -44,7 +44,7 @@ export class MapComponent implements AfterViewInit {
 
     this.load.loadScript(url, 'gmap', () => {
       this.maps = window['google']['maps'];
-      const loc = new this.maps.LatLng(51.561638, -0.14);
+      const loc = new this.maps.LatLng(32.078491, 34.766687);
 
       this.map = new this.maps.Map(this.mapElm.nativeElement, {
         zoom: 11,
