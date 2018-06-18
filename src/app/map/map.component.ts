@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, Input } from '@angular/core';
 import { ScriptLoadService } from '../script-load.service';
 import { FirebaseApp } from 'angularfire2';
 import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
@@ -17,20 +17,19 @@ export class MapComponent implements AfterViewInit {
 
   maps: any;
   map: any;
+  marker: any;
+  mapMarker: any;
   markersRef: AngularFireList<any>;
-  markers: Observable<any[]>;
   markersCh: Observable<any[]>;
-  newName: string;
+  editActive: boolean;
+
+  @Input() userAuth: string;
 
   @ViewChild('mapElement') mapElm: ElementRef;
 
   constructor(private load: ScriptLoadService, db: AngularFireDatabase) {
 
-    this.markers = db.list('/markers').valueChanges();
-
-    this.markers.subscribe(x => {
-      console.log(x);
-    });
+    this.editActive = false;
 
     this.markersRef = db.list('/markers');
 
@@ -39,15 +38,12 @@ export class MapComponent implements AfterViewInit {
         changes.map(c => ({ key: c.payload.key, ...c.payload.val() }))
       )
     );
-
-    this.newName = 'Anonymous';
   }
 
   ngAfterViewInit(): void {
 
     this.load.loadScript(url, 'gmap', () => {
       this.maps = window['google']['maps'];
-      console.log(this.maps);
       const loc = new this.maps.LatLng(51.561638, -0.14);
 
       this.map = new this.maps.Map(this.mapElm.nativeElement, {
@@ -66,33 +62,44 @@ export class MapComponent implements AfterViewInit {
       });
 
       this.map.addListener('click', (e) => {
-        console.log(e.latLng, e.latLng.lat(), e.latLng.lng());
-        this.placeMarkerAndPanTo(e.latLng, this.map);
-        this.addMarker(e.latLng.lat(), e.latLng.lng(),this.newName);
+        if (this.editActive) {
+          this.placeMarkerAndPanTo(e.latLng, this.map);
+          this.marker = {
+            position: {
+              lat: e.latLng.lat(),
+              lng: e.latLng.lng(),
+            },
+            title: this.userAuth
+          };
+        }
       });
     });
   }
 
   placeMarkerAndPanTo(latLng, map) {
-    let marker = new this.maps.Marker({
-      position: latLng,
-      map: map
-    });
+    if (!this.mapMarker) {
+      this.mapMarker = new this.maps.Marker({
+        position: latLng,
+        map: map
+      });
+    } else {
+      this.mapMarker.setPosition(latLng);
+    }
     map.panTo(latLng);
   }
 
-  addMarker(lat: number, lng: number, title: string) {
-    this.markersRef.push({
-      position: {
-        lat: lat,
-        lng: lng,
-      },
-      title: title
-    });
+  choosePlace(state: string) {
+    if (state === 'choose') {
+      this.editActive = true;
+    } else {
+      // if state === 'send'
+      this.editActive = false;
+      this.addMarker(this.marker);
+    }
   }
 
-  userName(name: string) {
-    this.newName= name;
+  addMarker(marker: any) {
+    this.markersRef.push(marker);
   }
 
   // updateItem(key: string, newText: string) {
@@ -101,8 +108,8 @@ export class MapComponent implements AfterViewInit {
   // deleteItem(key: string) {
   //   this.markersRef.remove(key);
   // }
-  // deleteEverything() {
-  //   this.markersRef.remove();
-  // }
+  deleteEverything() {
+    this.markersRef.remove();
+  }
 
 }
